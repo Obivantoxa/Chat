@@ -5,20 +5,21 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Locale;
 
 public class Server {
 
     public static void main(String[] args) {
-
+        ArrayList<Socket> sockets = new ArrayList<>();
         try {
             ServerSocket serverSocket = new ServerSocket(9445);
             System.out.println("Сервер запущен");
             while (true) {
-                Socket clientSocket = serverSocket.accept();// ждет пока к нему подключится кто-то
+                Socket clientSocket = serverSocket.accept();// ???? ???? ? ???? ??????????? ???-??
                 System.out.println("Клиент подключился");
-
-                // второй поток с сообщениями
+                sockets.add(clientSocket);
+                // ?????? ????? ? ???????????
                 Thread thread = new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -26,9 +27,15 @@ public class Server {
                             DataInputStream inputStream = new DataInputStream(clientSocket.getInputStream());
                             DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
                             while (true){
+                                //???????? ?????????
+                                // ?????????? ?????? ???????? ??? ???????? ???????? ?????????
                                 String message = inputStream.readUTF();
-                                outputStream.writeUTF(message.toUpperCase(Locale.ROOT));
-                                System.out.println(message);
+                                for (Socket socket1 : sockets) {
+                                    DataOutputStream out = new DataOutputStream(socket1.getOutputStream());
+                                    out.writeUTF(message);
+                                }
+                                //outputStream.writeUTF(message);
+                                System.out.println( "сообщение от клиента: "+message);
                             }
 
                         } catch (IOException e) {
